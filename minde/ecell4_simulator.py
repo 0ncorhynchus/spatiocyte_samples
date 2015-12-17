@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from ecell4 import *
+import csv
 
 duration = 100 #sec
 
@@ -35,4 +36,12 @@ w.add_molecules(Species('MinDadp'), 1300)
 w.add_molecules(Species('MinDEE'), 700)
 
 sim = f.create_simulator(m, w)
-sim.run(duration)
+alpha = reduce(lambda x, y: min(x, sim.calculate_alpha(y)), m.reaction_rules())
+sim.set_alpha(alpha)
+
+obs = FixedIntervalNumberObserver(0.01, ('MinEE_M', 'MinD', 'MinDEE', 'MinDEED'))
+sim.run(duration, obs)
+
+with open('ecell4_data.csv', 'wb') as f:
+    writer = csv.writer(f)
+    writer.writerows(obs.data())
